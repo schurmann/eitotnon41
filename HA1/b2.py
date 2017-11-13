@@ -20,10 +20,8 @@ def gen_coins(conf):
         hit_bin, ball = throw_ball(counter, conf)
         bins[hit_bin].append(ball)
         if len(bins[hit_bin]) >= conf['k']:
-            # print(time.time(),' : ', conf['k'], 'way collision at', hit_bin)
             found.add(hit_bin)
         counter += 1
-    # result['duration'] : int(time.time()) - starttime
     return counter-1
 
 def save_data(data):
@@ -46,16 +44,11 @@ def interval(vals, config):
 if __name__ == '__main__':
     durations = []
     while True:
-        # try:
-        #     durations = pickle.load(open("b2.log", "rb"))
-        #     print('loaded pickled data', len(durations))
-        # except (OSError, IOError) as e:
-        #     print('no pickled data')
         experiment_config = {
             'u' : 16,
-            'k' : 2,
+            'k' : 4,
             'c' : 1,
-            'w' : 22,
+            'w' : 578,
             'l' : 3.66,
             'nonce' : random.randint(0, 10000).to_bytes(4, byteorder='big')
         }
