@@ -51,12 +51,13 @@ if __name__ == '__main__':
         leafs = inputs[2:]
         byteleafs = [bytes.fromhex(l) for l in leafs]
         path = []
-        # tree = build_merkle_tree(byteleafs, int(leaf_index), path)
-        tree = build_merkle_tree(byteleafs, 9, path)
+        tree = build_merkle_tree(byteleafs, int(leaf_index), path)
+        # tree = build_merkle_tree(byteleafs, 9, path)
         # for layer in tree:
         #     print('layer size:',len(layer),'type:',type(layer), 'element type:', type(layer[0]))
         print_tree(tree)
         print('path:')
         pprint.pprint(path)
         print('depth',depth_index, ':', path[-int(depth_index)])
+        print('answer:', path[-int(depth_index)] + bytes.hex(tree[-1][0]))
         f.close()
