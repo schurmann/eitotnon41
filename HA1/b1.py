@@ -1,3 +1,5 @@
+import sys
+
 def luhn(acc_nbr):
     acc_ints = [int(x) for x in acc_nbr[:-1]]
     checksum = 0
@@ -17,21 +19,14 @@ def find_x(acc_nbr):
         if ans:
             return x
     return -1
-        
+
 
 if __name__ == '__main__':
-    inputs = [
-            "12774212857X4109",
-            "586604X108627571",
-            "7473X86953606632",
-            "4026467X45830632",
-            "20X3092648604969",
-    ]
     ans = ''
-    with open('testin.txt','r') as biginput:
+    with open(sys.argv[1],'r') as biginput:
         for line in biginput:
             line = line.strip()
             ans += str(find_x(line))
 
     print(ans)
-    
+
