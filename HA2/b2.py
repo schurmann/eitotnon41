@@ -1,5 +1,6 @@
 from pcapfile import savefile
 from pprint import pprint
+import sys
 
 def next_batch(index, mix_ip, packets):
     while index < len(packets) and packets[index].packet.payload.src.decode('UTF8') != mix_ip:
@@ -24,12 +25,14 @@ def learning_phase(target_ip:str, mix_ip:str, m:int, filename:str) -> list:
 def find_partners(target_ip:str, mix_ip:str, m:int, filename:str):
     batchsets = learning_phase(target_ip, mix_ip, m, filename)
     disjoint_batches, joint_batches = separate_disjoint_batches(batchsets, m)
-    valid_rs = [r for r in joint_batches if len(joint_with(r, disjoint_batches)) == 1]
-    for r in valid_rs:
-        joint_dbatches = joint_with(r, disjoint_batches)
-        assert(len(joint_dbatches) == 1)
-        dbatch = joint_dbatches[0]
-        dbatch.intersection_update(r)
+    #TODO maybe check delta
+    while max([len(b) for b in disjoint_batches]) > 1:
+        valid_rs = [r for r in joint_batches if len(joint_with(r, disjoint_batches)) == 1]
+        for r in valid_rs:
+            joint_dbatches = joint_with(r, disjoint_batches)
+            assert(len(joint_dbatches) == 1)
+            dbatch = joint_dbatches[0]
+            dbatch.intersection_update(r)
     for b in disjoint_batches:
         assert(len(b) == 1)
     partners = [list(b)[0] for b in disjoint_batches]
@@ -67,8 +70,12 @@ def separate_disjoint_batches(batchsets: list, m: int):
 
 def exclude_phase(r: set, others: list):
     return r.intersection(set(others[0])).intersection(set(others[1]))
-        
+
+def print_ans(target_ip:str, mix_ip:str, m:int, filename:str):
+    partners = find_partners(target_ip, mix_ip, m, filename)
+    print('partners:', partners)
+    print(filename,':',sum([int(''.join([hex(int(i))[2:] for i in ip.split(r'.')]), 16) for ip in partners]))
+
 if __name__ == '__main__':
-    partners = find_partners('159.237.13.37', '94.147.150.188', 2, 'cia.log.1337.pcap')
-    ans = sum([int(''.join([hex(int(i))[2:] for i in ip.split(r'.')]), 16) for ip in partners])
-    print(ans)
+    print_ans('159.237.13.37', '94.147.150.188', 2, 'cia.log.1337.pcap')
+    print_ans('161.53.13.37', '11.192.206.171', 12, 'cia.log.1339.pcap')
