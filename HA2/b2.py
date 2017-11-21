@@ -49,11 +49,6 @@ def joint_with(b:set, others:list) -> list:
 
 def separate_disjoint_batches(batchsets: list, m: int):
     disjoint_indices = []
-    # for i in range(0, len(batchsets)):
-    #     for j in range(i + 1, len(batchsets)):
-    #         if disjoint(batchsets[i], batchsets[j]):
-    #            break
-    #     disjoint.append(i)
     for i, batch in enumerate(batchsets):
         if len(joint_with(batch, [batchsets[i] for i in disjoint_indices])) == 0:
             disjoint_indices.append(i)
@@ -71,10 +66,14 @@ def separate_disjoint_batches(batchsets: list, m: int):
 def exclude_phase(r: set, others: list):
     return r.intersection(set(others[0])).intersection(set(others[1]))
 
+def ip_to_int(ip: str) -> int:
+    return int(''.join([hex(int(i))[2:].zfill(2) for i in ip.split(r'.')]), 16)
+    
+
+
 def print_ans(target_ip:str, mix_ip:str, m:int, filename:str):
     partners = find_partners(target_ip, mix_ip, m, filename)
-    print('partners:', partners)
-    print(filename,':',sum([int(''.join([hex(int(i))[2:] for i in ip.split(r'.')]), 16) for ip in partners]))
+    print(filename,':',sum([ip_to_int(ip) for ip in partners]))
 
 if __name__ == '__main__':
     print_ans('159.237.13.37', '94.147.150.188', 2, 'cia.log.1337.pcap')
