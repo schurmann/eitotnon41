@@ -40,14 +40,18 @@ def try_to_unveil(x_size:int) -> bool:
     return has_k(0, x) ^ has_k(1, x)
 
 def plot(rng:list):
-    #unbinding_probs = [find_prob(try_to_unbind, i) for i in rng]
-    #print('finished unbinding')
-    unveiling_probs = []
+    probs = []
     for i in rng:
         print(i)
-        unveiling_probs.append(find_prob(try_to_unveil, i))
-        write_prob('conceiling', zip(rng, unveiling_probs))
-    print('finished unveiling')
+        probs.append(find_prob(try_to_unveil, i, iterations=1000))
+        write_prob('binding', zip(rng, probs))
+    print('finished binding')
+    for i in rng:
+        print(i)
+        probs.append(find_prob(try_to_unbind, i, iterations=1000))
+        write_prob('conceiling', zip(rng, probs))
+    print('finished conceiling')
+
 
 def write_prob(file_name, data):
     with open(file_name, 'w') as f:
@@ -55,7 +59,7 @@ def write_prob(file_name, data):
 
 
 if __name__ == '__main__':
-    rng = list(range(0, 256, 5))
+    rng = list(range(256))
     plot(rng)
     # [print('x_size:', i, '\tprob:', find_prob(try_to_unveil, i)) for i in range(256)]
     
