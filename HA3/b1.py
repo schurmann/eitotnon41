@@ -1,4 +1,5 @@
 from hashlib import sha256
+from matplotlib import pyplot as plt
 import random
 
 K_SIZE = 16
@@ -38,7 +39,16 @@ def try_to_unveil(x_size:int) -> bool:
     x = h(str(v), str(k), x_size)
     return has_k(0, x) ^ has_k(1, x)
 
+def plot(rng:list):
+    unbinding_probs = [find_prob(try_to_unbind, i) for i in rng]
+    print('finished unbinding')
+    # unveiling_probs = [find_prob(try_to_unveil, i) for i in rng]
+    # print('finished unveiling')
+    plt.plot(rng, unbinding_probs)
+
 
 if __name__ == '__main__':
-    [print('x_size:', i, '\tprob:', find_prob(try_to_unveil, i)) for i in range(256)]
+    rng = list(range(0, 256, 5))
+    plot(rng)
+    # [print('x_size:', i, '\tprob:', find_prob(try_to_unveil, i)) for i in range(256)]
     
