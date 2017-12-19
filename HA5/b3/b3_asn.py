@@ -2,70 +2,51 @@ from b3_rsa import gen_skey_params
 import base64
 from math import log
 
-def bin_to_hex(bin_s: str) -> str:
-    return hex(int(bin_s, 2))[2:]
+def bytes_to_int(b: bytes) -> int:
+    return int.from_bytes(b, byteorder='big')
 
-# def byte_length(i: int) -> int:
-#     return len(hex(i)[2:]) // 2
+def byte_size(i: int) -> int:
+    return 1 if i == 0 else int(log(i, 256)) + 1
 
-def bytelen(i: int) -> int:
-    return 1 if i == 0 else (int(log(i, 256)) + 1)
+def int_to_bytes(i: int) -> bytes:
+    return i.to_bytes(byte_size(i), byteorder='big')
 
-def test_bytelen():
-    assert bytelen(0x0) == 1
-    assert bytelen(0x52) == 1
-    assert bytelen(0xaaaa) == 2
-    assert bytelen(0xffff) == 2
-    assert bytelen(0x12345) == 3
+def test_byte_size():
+    assert byte_size(0x0) == 1
+    assert byte_size(0x52) == 1
+    assert byte_size(0xff) == 1
+    assert byte_size(0xaaaa) == 2
+    assert byte_size(0xffff) == 2
+    assert byte_size(0x12345) == 3
 
-def get_val(i:int) -> str:
-    val = hex(i)[2:]
-    if len(val) % 2 != 0:
-        val = '0' + val
-    return val
 
-def get_len(i: int):
-    val = bytes.fromhex(get_val(i))
-    l = len(val)
+def test_get_len():
+    assert get_len(b'\x00').hex() == '01'
+    assert get_len(b'\x7f').hex() == '01'
+    assert get_len(b'\x00'*131).hex() == '8183' #131 bytes
+
+def get_len(b: bytes) -> bytes:
+    l = len(b)
     if l > 127:
-        req_bytes = 1 if l == 0 else (int(log(l, 256)) + 1)
+        req_bytes = byte_size(l)
         #TODO felmeddelande för för stora tal
-        lenlen = (0x80 + req_bytes).to_bytes(1, byteorder='big')
-        return lenlen + l.to_bytes(req_bytes, byteorder='big')
-    return l.to_bytes(1, byteorder='big')
-
-# def get_len(i:int):
-#     val = get_val(i)
-#     length = len(val) // 2
-#     if len(bin(i)[2:]) % 8 == 0:
-#         val = '00' + val
-#         length += 1
-#     if length > 127:
-#         #Use long defintive form
-#         len_length = byte_length(length)
-#         length = bin_to_hex('1' + bin(len_length)[2:].zfill(7) + bin(length)[2:])
-#     else:
-#         #Use short definite form
-#         length = bin_to_hex('0' + bin(length)[2:])
-#     if len(length) % 2 != 0:
-#         length = '0' + length
-#     print(length)
-#     return length
+        lenlen = int_to_bytes(0x80 | req_bytes)
+        return lenlen + int_to_bytes(l)
+    return int_to_bytes(l)
 
 def encode_int(i:int) -> str:
-    type_ = "02"
-    val = get_val(i)
+    t = b'\x02'
+    v = int_to_bytes(i)
     if len(bin(i)[2:]) % 8 == 0:
-        val = '00' + val
-    length = get_len(i).hex()
-    ans = type_ + length + val
-    return ans
+        v = b'\x00' + v
+    l = get_len(v)
+    return (t + l + v).hex()
 
 def encode_seq(elements):
-    type_ = '30'
-    val = ''.join(elements)
-    length = get_len(int(val, 16))
-    return type_ + length + val
+    t = b'\x30'
+    v = bytes.fromhex(''.join(elements))
+    l = get_len(v)
+    return (t + l + v).hex()
 
 
 def encode_rsa(params):
@@ -75,7 +56,6 @@ def encode_rsa(params):
                 for label in ['n','e','d','p','q','exp1','exp2','coeff']
             ]
     return encode_seq(fields)
-
 
 
 def test_encode_int():
@@ -102,5 +82,4 @@ if __name__ == '__main__':
     p, q = 139721121696950524826588106850589277149201407609721772094240512732263435522747938311240453050931930261483801083660740974606647762343797901776568952627044034430252415109426271529273025919247232149498325412099418785867055970264559033471714066901728022294156913563009971882292507967574638004022912842160046962763, 141482624370070397331659016840167171669762175617573550670131965177212458081250216130985545188965601581445995499595853199665045326236858265192627970970480636850683227427420000655754305398076045013588894161738893242561531526805416653594689480170103763171879023351810966896841177322118521251310975456956247827719
     params = gen_skey_params(p, q)
     encoded = encode_rsa(params).strip()
-    #print(encoded, '\n')
-    #print(base64.b64encode(bytes.fromhex(encoded)))
+    print(base64.b64encode(bytes.fromhex(encoded)).decode('utf8'))
